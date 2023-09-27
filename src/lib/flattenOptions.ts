@@ -10,6 +10,7 @@ export function flattenOptions(
     if (option.type === "group") {
       return option.items.map(
         (i): Option => ({
+          ...i,
           type: "item",
           name: i.name,
           value: i.value,
@@ -20,6 +21,7 @@ export function flattenOptions(
     }
 
     const indexed: Option = {
+      ...option,
       name: option.name,
       type: option.type ?? "item",
       value: option.value,

@@ -1,34 +1,34 @@
-import FlattenOptions from '../src/lib/flattenOptions';
+import { flattenOptions } from "../src/lib/flattenOptions";
 
-describe('Unit test for FlattenOptions function', () => {
-    const groupedOptions = [
+describe("Unit test for FlattenOptions function", () => {
+  const groupedOptions = [
+    {
+      type: "group",
+      name: "Cursive",
+      items: [
         {
-            "type": "group",
-            "name": "Cursive",
-            "items": [
-                {
-                    "name": "Monoton",
-                    "value": "Monoton",
-                },
-            ]
+          name: "Monoton",
+          value: "Monoton",
         },
-        {
-            "name": "Gloria Hallelujah",
-            "value": "Gloria Hallelujah",
-        },
-    ];
+      ],
+    },
+    {
+      name: "Gloria Hallelujah",
+      value: "Gloria Hallelujah",
+    },
+  ];
 
-    const flattenOptions = FlattenOptions(groupedOptions);
+  const result = flattenOptions(groupedOptions);
 
-    test('Has correct items', () => {
-        expect(flattenOptions).toHaveLength(2);
-    });
+  test("Has correct items", () => {
+    expect(result).toHaveLength(2);
+  });
 
-    test('First item should be a group', () => {
-        expect('group' in flattenOptions[0]).toEqual(true);
-    });
+  test("First item should be a group", () => {
+    expect("group" in result[0]).toEqual(true);
+  });
 
-    test('Second item should not be a group', () => {
-        expect('group' in flattenOptions[1]).toEqual(false);
-    });
+  test("Second item should not be a group", () => {
+    expect("group" in result[1]).toEqual(false);
+  });
 });
