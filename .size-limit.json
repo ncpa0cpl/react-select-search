@@ -1,0 +1,7 @@
+[
+  {
+    "path": "./dist/index.js",
+    "import": "{ SelectSearch }",
+    "limit": "4 kB"
+  }
+]
