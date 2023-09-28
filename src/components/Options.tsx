@@ -28,6 +28,7 @@ export type RenderOptionCallback = (
 export type RenderGroupHeaderCallback = (name: string) => string;
 
 export type OptionListProps = {
+  reverse?: boolean;
   options: Array<OptionType | OptionGroup>;
   renderOption?: RenderOptionCallback;
   renderGroupHeader?: RenderGroupHeaderCallback;
@@ -44,38 +45,49 @@ export const Options = memo((props: OptionListProps) => {
     optionProps,
     snapshot,
     disabled,
+    reverse,
   } = props;
 
-  return (
-    <ul className={`${BASE_CLASS}-options`}>
-      {options.map((o) => {
-        if (o.type === "group") {
-          return (
-            <li role="none" className={`${BASE_CLASS}-row`} key={o.name}>
-              <div className={`${BASE_CLASS}-group`}>
-                <div className={`${BASE_CLASS}-group-header`}>
-                  {renderGroupHeader ? renderGroupHeader(o.name) : o.name}
-                </div>
-                <Options {...props} options={o.items} />
-              </div>
-            </li>
-          );
-        }
+  const optionsElements: JSX.Element[] = [];
 
-        return (
-          <Option
-            key={o.value}
-            option={o}
-            optionProps={optionProps}
-            renderOption={renderOption}
-            selected={isSelected(o, snapshot.option)}
-            highlighted={snapshot.highlighted === o.index}
-            disabled={o.disabled || disabled}
-          />
-        );
-      })}
-    </ul>
-  );
+  const renderOptionElement = (o: OptionType | OptionGroup) => {
+    if (o.type === "group") {
+      return (
+        <li role="none" className={`${BASE_CLASS}-row`} key={o.name}>
+          <div className={`${BASE_CLASS}-group`}>
+            <div className={`${BASE_CLASS}-group-header`}>
+              {renderGroupHeader ? renderGroupHeader(o.name) : o.name}
+            </div>
+            <Options {...props} options={o.items} />
+          </div>
+        </li>
+      );
+    }
+
+    return (
+      <Option
+        key={o.value}
+        option={o}
+        optionProps={optionProps}
+        renderOption={renderOption}
+        selected={isSelected(o, snapshot.option)}
+        highlighted={snapshot.highlighted === o.index}
+        disabled={o.disabled || disabled}
+      />
+    );
+  };
+
+  if (reverse) {
+    for (let i = options.length - 1; i >= 0; i--) {
+      optionsElements.push(renderOptionElement(options[i]!));
+    }
+  } else {
+    for (let i = 0; i < options.length; i++) {
+      optionsElements.push(renderOptionElement(options[i]!));
+    }
+  }
+
+  return <ul className={`${BASE_CLASS}-options`}>{optionsElements}</ul>;
 });
 
 Options.displayName = "Options";

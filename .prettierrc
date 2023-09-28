@@ -1,7 +1,8 @@
 {
-    "trailingComma": "all",
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": false,
-    "bracketSpacing": true
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": false,
+  "bracketSpacing": true,
+  "plugins": ["./node_modules/prettier-plugin-jsdoc/dist/index.js"]
 }

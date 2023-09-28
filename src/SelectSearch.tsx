@@ -16,33 +16,86 @@ import {
 } from "./useSelect";
 
 export type SelectSearchProps = {
+  /**
+   * Each object should contain a `name` and `value` property, at the very
+   * least. Optionally the `type` can be set to "group" to mark the option as as
+   * a group, in which case the `items` property should be set.
+   */
   options: Option[];
   defaultValue?: string | string[];
+  /**
+   * Value of the currently selected option. The value should be an array if
+   * multiple mode.
+   */
   value?: string | string[];
+  /** Set to true if you want to allow multiple selected options. */
   multiple?: boolean;
+  /** Set to true to enable search functionality */
   search?: boolean;
+  /** Disables all functionality */
   disabled?: boolean;
+  /**
+   * Displayed if no option is selected and/or when search field is focused with
+   * empty value.
+   */
   placeholder?: string;
+  /** HTML ID on the top level element. */
   id?: string;
+  /** Disables/Enables autoComplete functionality in search field. */
   autoComplete?: "on" | "off";
+  /** Autofocus on select */
   autoFocus?: boolean;
+  /** Class name of a list of class names to be applied to the container element. */
   className?: string | string[] | { [key: string]: boolean };
+  /** Function to receive and handle value changes. */
   onChange?: OnChangeCallback;
+  /**
+   * Function to receive and handle focus events on the search field. This is
+   * also the event you want to use when reacting to the select modal opening.
+   */
   onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  /**
+   * Function to receive and handle blur events on the search field. This is
+   * also the event you want to use when reacting to the select modal closing.
+   */
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  /**
+   * When enabled, the dropdown modal will appear above the input, instead of
+   * below it, order od options will also be reversed.
+   */
+  expandUpward?: boolean;
+  /**
+   * The selectbox will blur by default when selecting an option. Set this to
+   * false to prevent this behavior.
+   */
   closeOnSelect?: boolean;
+  /** Function that renders the options elements. */
   renderOption?: RenderOptionCallback;
+  /** Set to true to enable search functionality via fuzzy-find. */
   fuzzySearch?: boolean;
+  /**
+   * An array of functions that takes the last filtered options and a search
+   * query if any. Runs after getOptions.
+   */
   filterOptions?: FilterOptionGetter[];
+  /** Function that renders the value/search field. */
   renderValue?: (
     valueProps: InputElementPops,
     snapshot: SelectorSnapshot,
     className: string,
   ) => React.ReactNode;
+  /** Function that renders the group header. */
   renderGroupHeader?: RenderGroupHeaderCallback;
+  /** Get options through a function call, can return a promise for async usage. */
   getOptions?: GetOptionsCallback;
+  /** Number of ms to wait until calling get options when searching. */
   debounce?: number;
-  ref?: React.Ref<React.Component>;
+  /** Ref to the top level div element. */
+  ref?: React.Ref<HTMLDivElement>;
+  /**
+   * Set empty message for empty options list, you can provide render function
+   * without arguments instead plain string message
+   */
   emptyMessage?: React.ReactNode | (() => React.ReactNode);
 };
 
@@ -69,6 +122,7 @@ export const SelectSearch = memo(
         emptyMessage,
         value,
         debounce = 250,
+        expandUpward,
         ...hookProps
       }: SelectSearchProps,
       ref,
@@ -101,23 +155,29 @@ export const SelectSearch = memo(
       };
 
       useEffect(() => {
-        const { current } = selectRef;
+        const { current: container } = selectRef;
 
-        if (current) {
+        if (container) {
           const val = Array.isArray(snapValue) ? snapValue[0] : snapValue;
           if (val != null) {
-            const selected = current.querySelector<HTMLElement>(
+            const selected = container.querySelector<HTMLElement>(
               highlighted > -1
                 ? `[data-index="${highlighted}"]`
                 : `[value="${encodeURIComponent(val)}"]`,
             );
 
             if (selected) {
-              const rect = current.getBoundingClientRect();
-              const selectedRect = selected.getBoundingClientRect();
-
-              current.scrollTop =
-                selected.offsetTop - rect.height / 2 + selectedRect.height / 2;
+              if (expandUpward) {
+                selected.scrollIntoView({
+                  behavior: "smooth",
+                  block: "end",
+                });
+              } else {
+                selected.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }
             }
           }
         }
@@ -134,6 +194,8 @@ export const SelectSearch = memo(
             [`${BASE_CLASS}-is-disabled`]: disabled,
             [`${BASE_CLASS}-is-loading`]: fetching,
             [`${BASE_CLASS}-has-focus`]: focus,
+            [`${BASE_CLASS}-expand-upward`]: !!expandUpward,
+            [`${BASE_CLASS}-expand-downward`]: !expandUpward,
           })}
         >
           {(!multiple || placeholder || search) && (
@@ -152,6 +214,7 @@ export const SelectSearch = memo(
           >
             {snapshot.options.length > 0 && (
               <Options
+                reverse={expandUpward}
                 options={snapshot.options}
                 optionProps={optionProps}
                 renderOption={renderOption}
